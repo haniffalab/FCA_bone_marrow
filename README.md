@@ -1,6 +1,6 @@
 # FCA_bone_marrow
 
-This repository contains all analysis scripts used to explore single cell datasets for: Jardine and Webb et al., 2020, Emergent haematopoiesis in the human fetal bone marrow (manuscript not submitted).
+This repository contains all analysis scripts used to explore single cell datasets for: Jardine and Webb et al., 2020, "Emergent haematopoiesis in the human fetal bone marrow" (manuscript not submitted).
 
 ## Datasets 
 
