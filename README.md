@@ -22,7 +22,7 @@ YS - yolk sac. FL - fetal liver. FBM - fetal bone marrow. ABM - adult bone marro
 
 Cellranger count matrix files for FBM 10X data were loaded into one object as described in https://github.com/haniffalab/FCA_liver, then cells were clustered into major groups and analysed. Raw counts and cell type annotations were uploaded to ArrayExpress (E-MTAB-############).
 
-Generalisable scripts are saved in the 'pipelines' directory - these include: (1) Scrublet doublet removal, (2) Pre-processing count matrix, batch correction and adding dimensional reduction (3) Gene-set over-representation analysis and (4) Negative binomial barplot statistics. 
+Generalisable scripts are saved in the 'pipelines' directory - these include: (1) Scrublet doublet removal, (2) Pre-processing count matrix, batch correction and adding dimensional reduction (3) Clustering and annotation (4) Gene-set over-representation analysis and (5) Negative binomial barplot statistics. 
 
 Custom scripts for each figure (that do not fall under 'generalisable' pipeline scripts) are saved in the 'figures' directory, where you will see all analysis performed on raw count matrix files in order to produce figures for manuscript.
 
