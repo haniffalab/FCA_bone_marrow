@@ -1,0 +1,710 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/home/jovyan/my-conda-envs/workhorse/lib/python3.6/site-packages/anndata/_core/anndata.py:21: FutureWarning: pandas.core.index is deprecated and will be removed in a future version.  The public classes are available in the top-level namespace.\n",
+      "  from pandas.core.index import RangeIndex\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "scanpy==1.4.4.post1 anndata==0.7.1 umap==0.3.10 numpy==1.18.1 scipy==1.3.0 pandas==1.0.3 scikit-learn==0.22.2.post1 statsmodels==0.11.1 python-igraph==0.8.0 louvain==0.6.1\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/home/jovyan/my-conda-envs/workhorse/lib/python3.6/site-packages/sklearn/utils/deprecation.py:144: FutureWarning: The sklearn.cluster.k_means_ module is  deprecated in version 0.22 and will be removed in version 0.24. The corresponding classes / functions should instead be imported from sklearn.cluster. Anything that cannot be imported from sklearn.cluster is now part of the private API.\n",
+      "  warnings.warn(message, FutureWarning)\n"
+     ]
+    }
+   ],
+   "source": [
+    "%matplotlib inline\n",
+    "from collections import Counter\n",
+    "from collections import defaultdict\n",
+    "import scanpy as sc\n",
+    "import scrublet as scr\n",
+    "import pandas as pd\n",
+    "import pickle as pkl\n",
+    "import numpy as np\n",
+    "from bbknn import bbknn\n",
+    "import scipy\n",
+    "import matplotlib.pyplot as plt\n",
+    "import re\n",
+    "import glob\n",
+    "import os\n",
+    "import sys\n",
+    "from geosketch import gs\n",
+    "from numpy import cov\n",
+    "import scipy.cluster.hierarchy as spc\n",
+    "import seaborn as sns; sns.set(color_codes=True)\n",
+    "from sklearn.linear_model import LogisticRegression\n",
+    "import sklearn\n",
+    "sc.settings.verbosity = 3  # verbosity: errors (0), warnings (1), info (2), hints (3)\n",
+    "sc.settings.set_figure_params(dpi=80, color_map='viridis')\n",
+    "sc.logging.print_versions()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Introduce variables\n",
+    "\n",
+    "#name of first object (arbitrary)\n",
+    "data1 = \"_Training\"\n",
+    "Object1 = './overall_data/Healthy_all_data.h5ad'\n",
+    "#provide categorical containing donor information\n",
+    "donor_id = 'donor_id'\n",
+    "PCs = [5,10,15,20,25]\n",
+    "#provide cateorical to join between datasets, this shoould be annotations for cells (obs col)\n",
+    "cat1 = 'final'\n",
+    "#provide an output path and a folder name to be created\n",
+    "output = \"./logit_regression_out_PCA_var_v3/\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Start of processing module"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Load dataset 1\n",
+    "adata_orig = sc.read(Object1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "Index(['sample_id', 'mad_prd', 'Status', 'Site', 'Site_old', 'Tissue',\n",
+       "       'Enrichment', 'Location', 'donor_id', 'Sex', 'Age', 'stage',\n",
+       "       'anno_final', 'final'],\n",
+       "      dtype='object')"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "adata_orig.obs.columns"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#insert pre-calculated umap coordinates\n",
+    "umap_coord = np.load('./healthy_data_umap.npy')\n",
+    "adata_orig.obsm[\"X_umap\"] = umap_coord"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Correcting cell labels"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "Trying to set attribute `.obs` of view, copying.\n"
+     ]
+    }
+   ],
+   "source": [
+    "sc_var = cat1\n",
+    "#Remove all \"NANS\" from the annotations\n",
+    "adata_orig = adata_orig[adata_orig.obs[~adata_orig.obs[sc_var].isna()].index]\n",
+    "\n",
+    "#Get the current annotation\n",
+    "clusters = list(adata_orig.obs[sc_var].unique())\n",
+    "clusters\n",
+    "\n",
+    "#List corrections\n",
+    "celltypes = [\n",
+    "'Post_proliferation_KC',\n",
+    " 'Post_proliferation_KC',\n",
+    " 'Post_proliferation_KC',\n",
+    " 'C_Melanocyte',\n",
+    " 'Post_proliferation_KC',\n",
+    " 'Post_proliferation_KC',\n",
+    " 'Pre_proliferation_KC',\n",
+    " 'Proliferating_KC',\n",
+    " 'Pre_proliferation_KC',\n",
+    " 'LE2',\n",
+    " 'F2',\n",
+    " 'LE1',\n",
+    " 'F1',\n",
+    " 'LC_2',\n",
+    " 'Th',\n",
+    " 'F3',\n",
+    " 'VE1',\n",
+    " 'VE2',\n",
+    " 'LC_3',\n",
+    " 'Tc',\n",
+    " 'LC_1',\n",
+    " 'Treg',\n",
+    " 'NK',\n",
+    " 'Macro_1',\n",
+    " 'ILC1_NK',\n",
+    " 'ILC2_3',\n",
+    " 'LC_4',\n",
+    " 'ILC1',\n",
+    " 'Macro_2',\n",
+    " 'Plasma',\n",
+    " 'DC2',\n",
+    " 'Inf_mono',\n",
+    " 'Mono',\n",
+    " 'moDC_3',\n",
+    " 'moDC_1',\n",
+    " 'moDC_2',\n",
+    " 'MigDC',\n",
+    " 'DC1',\n",
+    " 'Pericyte_2_inflamm',\n",
+    " 'Pericyte_1_inflamm',\n",
+    " 'Schwaan_2_non_myelinating',\n",
+    " 'VE3',\n",
+    " 'Schwaan_1_Stroma_Schwan_myelinating',\n",
+    " 'M_A_Mast_cell'\n",
+    "]\n",
+    "cell_dict = dict(zip(clusters, celltypes))\n",
+    "adata_orig.obs[sc_var] = adata_orig.obs[sc_var].map(cell_dict)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# LR function"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def LR_compare(adata, train_x ,train_label,subset_predict, subset_train,penalty='l2',sparcity=0.2,col_name='predicted'):\n",
+    "    #Define LR parameters\n",
+    "    penalty='l2'\n",
+    "    sparcity=0.2\n",
+    "    lr = LogisticRegression(penalty=penalty, C=sparcity)\n",
+    "\n",
+    "    if train_x == 'X':\n",
+    "        train_label = adata.obs[common_cat].values\n",
+    "        train_label = train_label[subset_train]\n",
+    "        train_x = adata.X\n",
+    "        predict_x = train_x\n",
+    "        train_x = train_x[subset_train, :]\n",
+    "        predict_x = train_x\n",
+    "        predict_x = predict_x[subset_predict]\n",
+    "\n",
+    "\n",
+    "    elif train_x in adata.obsm.keys():\n",
+    "        #Define training parameters\n",
+    "        train_label = adata.obs[common_cat].values\n",
+    "        train_label = train_label[subset_train]\n",
+    "        train_x = adata.obsm[train_x]\n",
+    "        predict_x = train_x\n",
+    "        train_x = train_x[subset_train, :]\n",
+    "\n",
+    "        #Define Prediction parameters\n",
+    "        predict_x = predict_x[subset_predict]\n",
+    "        predict_x = pd.DataFrame(predict_x)\n",
+    "        predict_x.index = adata.obs[subset_predict].index\n",
+    "\n",
+    "        \n",
+    "    #Train predictive model\n",
+    "    model = lr.fit(train_x, train_label)\n",
+    "    lr.fit(train_x, train_label)\n",
+    "    predict = lr.predict_proba(predict_x)\n",
+    "\n",
+    "    #Create prediction table and map to adata.obs\n",
+    "    predict = lr.predict(predict_x)\n",
+    "    predict = pd.DataFrame(predict)\n",
+    "    predict.index = adata.obs[subset_predict].index\n",
+    "    adata.obs[col_name] = adata.obs.index\n",
+    "    adata.obs[col_name] = adata.obs[col_name].map(predict[0])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Start of predictive and output loop"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/home/jovyan/data/projects/HCA_skin_project\n"
+     ]
+    }
+   ],
+   "source": [
+    "os.chdir('/home/jovyan/data/projects/HCA_skin_project/')\n",
+    "print(os.getcwd())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "5\n",
+      "10\n",
+      "15\n",
+      "20\n",
+      "25\n"
+     ]
+    }
+   ],
+   "source": [
+    "for i in PCs:\n",
+    "    print(i)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#inte = [5,10,15,20,25,30,35,40,45,50,55]\n",
+    "inte = [60,65,70]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/home/jovyan/data/projects/HCA_skin_project\n",
+      "Path already exists!\n",
+      "/home/jovyan/data/projects/HCA_skin_project/logit_regression_out_PCA_var_v3\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "Trying to set attribute `.obs` of view, copying.\n",
+      "Trying to set attribute `.obs` of view, copying.\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "data_concatenated!\n",
+      "normalizing by total count per cell\n",
+      "    finished (0:00:24): normalized adata.X and added    'n_counts', counts per cell before normalization (adata.obs)\n",
+      "extracting highly variable genes\n",
+      "    finished (0:00:47)\n",
+      "--> added\n",
+      "    'highly_variable', boolean vector (adata.var)\n",
+      "    'means', float vector (adata.var)\n",
+      "    'dispersions', float vector (adata.var)\n",
+      "    'dispersions_norm', float vector (adata.var)\n",
+      "computing PCA with n_comps = 60\n",
+      "computing PCA on highly variable genes\n",
+      "    finished (0:00:56)\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/home/jovyan/my-conda-envs/workhorse/lib/python3.6/site-packages/sklearn/linear_model/_logistic.py:940: ConvergenceWarning: lbfgs failed to converge (status=1):\n",
+      "STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.\n",
+      "\n",
+      "Increase the number of iterations (max_iter) or scale the data as shown in:\n",
+      "    https://scikit-learn.org/stable/modules/preprocessing.html\n",
+      "Please also refer to the documentation for alternative solver options:\n",
+      "    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression\n",
+      "  extra_warning_msg=_LOGISTIC_SOLVER_CONVERGENCE_MSG)\n",
+      "/home/jovyan/my-conda-envs/workhorse/lib/python3.6/site-packages/sklearn/linear_model/_logistic.py:940: ConvergenceWarning: lbfgs failed to converge (status=1):\n",
+      "STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.\n",
+      "\n",
+      "Increase the number of iterations (max_iter) or scale the data as shown in:\n",
+      "    https://scikit-learn.org/stable/modules/preprocessing.html\n",
+      "Please also refer to the documentation for alternative solver options:\n",
+      "    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression\n",
+      "  extra_warning_msg=_LOGISTIC_SOLVER_CONVERGENCE_MSG)\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "LR_predictions completed for loop 60!\n",
+      "LR probs saved for loop 60!\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "Trying to set attribute `.obs` of view, copying.\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "computing PCA with n_comps = 60\n",
+      "    finished (0:04:49)\n",
+      "computing batch balanced neighbors\n",
+      "\tfinished: added to `.uns['neighbors']`\n",
+      "\t'distances', weighted adjacency matrix\n",
+      "\t'connectivities', weighted adjacency matrix (0:00:53)\n",
+      "computing UMAP\n",
+      "    finished: added\n",
+      "    'X_umap', UMAP coordinates (adata.obsm) (0:04:13)\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "... storing 'predicted' as categorical\n",
+      "... storing 'clus_prediction' as categorical\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "WARNING: saving figure to file figures/umap_60.png\n",
+      "Umap, rand,Mi plotted for loop 60!\n",
+      "end of loop!\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "Trying to set attribute `.obs` of view, copying.\n",
+      "Trying to set attribute `.obs` of view, copying.\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "data_concatenated!\n",
+      "normalizing by total count per cell\n",
+      "    finished (0:00:15): normalized adata.X and added    'n_counts', counts per cell before normalization (adata.obs)\n",
+      "extracting highly variable genes\n",
+      "    finished (0:00:46)\n",
+      "--> added\n",
+      "    'highly_variable', boolean vector (adata.var)\n",
+      "    'means', float vector (adata.var)\n",
+      "    'dispersions', float vector (adata.var)\n",
+      "    'dispersions_norm', float vector (adata.var)\n",
+      "computing PCA with n_comps = 65\n",
+      "computing PCA on highly variable genes\n",
+      "    finished (0:01:05)\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/home/jovyan/my-conda-envs/workhorse/lib/python3.6/site-packages/sklearn/linear_model/_logistic.py:940: ConvergenceWarning: lbfgs failed to converge (status=1):\n",
+      "STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.\n",
+      "\n",
+      "Increase the number of iterations (max_iter) or scale the data as shown in:\n",
+      "    https://scikit-learn.org/stable/modules/preprocessing.html\n",
+      "Please also refer to the documentation for alternative solver options:\n",
+      "    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression\n",
+      "  extra_warning_msg=_LOGISTIC_SOLVER_CONVERGENCE_MSG)\n",
+      "/home/jovyan/my-conda-envs/workhorse/lib/python3.6/site-packages/sklearn/linear_model/_logistic.py:940: ConvergenceWarning: lbfgs failed to converge (status=1):\n",
+      "STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.\n",
+      "\n",
+      "Increase the number of iterations (max_iter) or scale the data as shown in:\n",
+      "    https://scikit-learn.org/stable/modules/preprocessing.html\n",
+      "Please also refer to the documentation for alternative solver options:\n",
+      "    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression\n",
+      "  extra_warning_msg=_LOGISTIC_SOLVER_CONVERGENCE_MSG)\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "LR_predictions completed for loop 65!\n",
+      "LR probs saved for loop 65!\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "Trying to set attribute `.obs` of view, copying.\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "computing PCA with n_comps = 65\n"
+     ]
+    }
+   ],
+   "source": [
+    "os.chdir('/home/jovyan/data/projects/HCA_skin_project/')\n",
+    "print(os.getcwd())\n",
+    "\n",
+    "#Create output directory\n",
+    "if os.path.exists(output) == True:\n",
+    "    print(\"Path already exists!\")\n",
+    "else:\n",
+    "    os.mkdir(output)\n",
+    "\n",
+    "os.chdir('./'+output)\n",
+    "print(os.getcwd())\n",
+    "\n",
+    "#Start of the subset and plotting loop\n",
+    "for i in inte:\n",
+    "    adata = adata_orig[:]\n",
+    "    adata2 = adata[:]\n",
+    "    #adata2 = adata2[~adata2.obs[donor_id].isin([i])]\n",
+    "#name of second object\n",
+    "    data2 = \"_prediction\"\n",
+    "#provide cateorical to join between datasets\n",
+    "    cat2 = cat1\n",
+    "    \n",
+    "#create a common obs column in both datasets containing the data origin tag\n",
+    "    common_cat = \"corr_concat\" \n",
+    "    adata.obs[common_cat] = adata.obs[cat1].astype(str) + data1\n",
+    "    adata2.obs[common_cat] = adata2.obs[cat2].astype(str) + data2\n",
+    "    adata.obs = adata.obs.astype('category')\n",
+    "    adata2.obs = adata2.obs.astype('category')\n",
+    "    #adata.raw = adata\n",
+    "    #adata2.raw = adata2\n",
+    "\n",
+    "#concat the data\n",
+    "    concat = adata.concatenate(adata2, join='inner', index_unique='-', batch_key='Status')\n",
+    "    adata = concat\n",
+    "    print('data_concatenated!')\n",
+    "#Get PCA by covarainces of variable genes\n",
+    "    sc.pp.normalize_per_cell(adata, counts_per_cell_after=1e4)\n",
+    "    sc.pp.log1p(adata)\n",
+    "    sc.pp.highly_variable_genes(adata, min_mean=0.1, max_mean=4)\n",
+    "\n",
+    "#%% PCA\n",
+    "    sc.pp.pca(adata, n_comps=i, use_highly_variable=True, svd_solver='arpack')\n",
+    "    \n",
+    "#Define the seprator category in the column of interest, this works by partial matches and enables a-symmetric comparisons\n",
+    "    Data1_group = data1\n",
+    "    Data2_group = data2\n",
+    "\n",
+    "#Define the common .obs column between cancatinated data\n",
+    "    common_cat = \"corr_concat\"\n",
+    "\n",
+    "#Define the resource to train and predict on, PCA or X or UMAP (#if you wish to use gene expression, train_x = 'X' or 'X_pca' , or 'X_umap'\n",
+    "    #train_x = 'X'\n",
+    "    train_x = 'X_pca'\n",
+    "    ########################################################################################\n",
+    "    group1 = (adata.obs[common_cat][adata.obs[common_cat].str.contains(Data1_group)]).unique()\n",
+    "    group1 = list(group1)\n",
+    "    group2 = (adata.obs[common_cat][adata.obs[common_cat].str.contains(Data2_group)]).unique()\n",
+    "    group2 = list(group2)\n",
+    "    subset_predict = np.array(adata.obs[common_cat].isin(group2))\n",
+    "    subset_train = np.array(adata.obs[common_cat].isin(group1))\n",
+    "    train_label = adata.obs[common_cat].values\n",
+    "    #########################################################################################\n",
+    "    \n",
+    "#Run LR\n",
+    "    LR_compare(adata, train_x,train_label,subset_predict, subset_train,penalty='l2',sparcity=0.2,col_name='predicted')\n",
+    "    print('LR_predictions completed for loop ' + str(i) + '!' )\n",
+    "#Plot predictions in probability heatmap\n",
+    "    x='predicted'\n",
+    "    y = common_cat\n",
+    "    y_attr = adata.obs[y]\n",
+    "    x_attr = adata.obs[x]\n",
+    "    crs_tbl = pd.crosstab(x_attr, y_attr)\n",
+    "    #crs_tbl_test = crs_tbl\n",
+    "    \n",
+    "#Cross table removes all result which have 0 matches, add these back into table\n",
+    "    vals = list(crs_tbl.index)\n",
+    "    pred = pd.DataFrame(group1)\n",
+    "    missing_vals = pred.iloc[:,0][~(pred.iloc[:,0].isin(vals))]\n",
+    "    crs_tbl = crs_tbl.T\n",
+    "    for missing in missing_vals:\n",
+    "        crs_tbl[missing] = 0\n",
+    "    crs_tbl = crs_tbl.reindex(sorted(crs_tbl.columns), axis=1)\n",
+    "    crs_tbl = crs_tbl.T\n",
+    "    crs_tbl = crs_tbl.reindex(sorted(crs_tbl.columns), axis=1)\n",
+    "    for col in crs_tbl :\n",
+    "        crs_tbl[col] = crs_tbl[col].div(crs_tbl[col].sum(axis=0)).multiply(100)\n",
+    "\n",
+    "#Optionally save this image!\n",
+    "    #plot_df_heatmap(crs_tbl.T, cmap='coolwarm', rotation=90, figsize=figsize, vmin=20, vmax=70)\n",
+    "    #pal = sns.diverging_palette(240, 10, n=10)\n",
+    "    #g = sns.clustermap(crs_tbl.T, cmap=pal,vmin=20, vmax=70,linewidths=.5)\n",
+    "    #g = sns.heatmap(crs_tbl, cmap=pal, vmin=0, vmax=100,linewidths=.5 ,center=50,square=True )\n",
+    "    #plt.show();\n",
+    "    \n",
+    "#Save probability distribution\n",
+    "    prob_out_name = \"./logist_prediction_prob_donor_minus_\" + str(i)+ \".csv\"\n",
+    "    crs_tbl.to_csv(prob_out_name)\n",
+    "    print(\"LR probs saved for loop \" + str(i) +\"!\")\n",
+    "############################\n",
+    "\n",
+    "    #Crete a holder for current obj\n",
+    "    adata3 = adata[:]\n",
+    "    #load original preiction object\n",
+    "    adata_predicted = adata2[:]\n",
+    "    #Assign matches\n",
+    "    adata3 = adata3[(adata3.obs[common_cat].isin(group2))]\n",
+    "    adata3.obs[common_cat].unique()\n",
+    "    adata_predicted.obs['predicted'] = adata_predicted.obs.index\n",
+    "    adata3.obs.index = adata_predicted.obs.index\n",
+    "    adata3.obs[common_cat].astype(str)\n",
+    "    adata_predicted.obs['predicted'] = adata3.obs[\"predicted\"].astype(str)\n",
+    "    \n",
+    "#Frequency redistribution by additive assignment if reclustering is done\n",
+    "    cluster_prediction = \"clus_prediction\"\n",
+    "    #clusters_reassign = \"leiden_res5\"\n",
+    "    #res= 5\n",
+    "    #lr_predicted_col = 'predicted'\n",
+    "    \n",
+    "##Plot Umap with Rand index and mutual info score\n",
+    "    #sc.pp.neighbors(adata_predicted,n_neighbors=15, n_pcs=i)\n",
+    "    #sc.pp.highly_variable_genes(adata_predicted, min_mean=0.1, max_mean=4)\n",
+    "    sc.pp.pca(adata_predicted, n_comps=i, use_highly_variable=False, svd_solver='arpack')\n",
+    "    sc.external.pp.bbknn(adata_predicted, batch_key='donor_id', approx=True, metric='angular', copy=False, n_pcs=i, trim=None, n_trees=10, use_faiss=True, set_op_mix_ratio=1.0, local_connectivity=1)\n",
+    "    sc.tl.umap(adata_predicted)\n",
+    "\n",
+    "    #sc.tl.leiden(adata_predicted, resolution= res, key_added= clusters_reassign, random_state=24, n_iterations=-1)\n",
+    "    #adata_predicted.obs[cluster_prediction] = adata_predicted.obs.index\n",
+    "    #for z in adata_predicted.obs[clusters_reassign].unique():\n",
+    "    #    df = adata_predicted.obs\n",
+    "    #    df = df[(df[clusters_reassign].isin([z]))]\n",
+    "    #    df_count = pd.DataFrame(df[lr_predicted_col].value_counts())\n",
+    "    #    freq_arranged = df_count.index\n",
+    "    #    cat = freq_arranged[0]\n",
+    "    #    df.loc[:,cluster_prediction] = cat\n",
+    "    #    adata_predicted.obs.loc[adata_predicted.obs[clusters_reassign] == z, [cluster_prediction]] = cat\n",
+    "    adata_predicted.obs[cluster_prediction] = adata_predicted.obs['predicted']\n",
+    "#caculate Rand and MI\n",
+    "    rand=sklearn.metrics.adjusted_rand_score(list(adata_predicted.obs[cat1]), list(adata_predicted.obs[cluster_prediction]))\n",
+    "    mi=sklearn.metrics.adjusted_mutual_info_score(list(adata_predicted.obs[cat1]), list(adata_predicted.obs[cluster_prediction]), average_method='arithmetic')\n",
+    "#include info in plot title\n",
+    "##Edit the predicted col and get all missing values\n",
+    "    adata_predicted.obs[cluster_prediction] = adata_predicted.obs[cluster_prediction].str.replace('_Training', '', regex=True)\n",
+    "    adata_predicted.obs[cluster_prediction]\n",
+    "    fig_name = str(i) + \" Adj_Rnd= \" + str(rand) + \" Mut_info= \" + str(mi)\n",
+    "    sc.pl.umap(adata_predicted,color=cluster_prediction,title = fig_name,save=(\"_\"+str(i)+\".png\"))\n",
+    "    print(\"Umap, rand,Mi plotted for loop \" + str(i) + \"!\")\n",
+    "# prints the missing and additional elements in list2 into our dataframe\n",
+    "    missing = set(list(adata_predicted.obs[cat1])).difference(list(adata_predicted.obs[cluster_prediction]))\n",
+    "\n",
+    "##Create data frame and populate with scoring metrics\n",
+    "    temp_score = pd.DataFrame(columns=[str(i)],dtype=object)\n",
+    "    temp_score = pd.DataFrame(temp_score.T)\n",
+    "    temp_score[\"adj_rand\"] = rand\n",
+    "    temp_score[\"mutual_info\"] = mi\n",
+    "    temp_score[\"missing_vals\"] = \"NAN\"\n",
+    "    temp_score.at[str(i), \"missing_vals\"] = missing\n",
+    "\n",
+    "    if 'concat_score' in globals():\n",
+    "        concat_score = pd.concat([concat_score, temp_score])\n",
+    "    else:\n",
+    "        concat_score = temp_score[:]\n",
+    "    \n",
+    "#Save file?\n",
+    "    #save_file_predicted = \"./adata_predicted_donor_minus_\" + i\n",
+    "    #adata.write(save_file_orig)\n",
+    "    \n",
+    "#Return resources back to system and restart the loop\n",
+    "    #gc.collect()\n",
+    "    del adata2\n",
+    "    del adata3\n",
+    "    print(\"end of loop!\")\n",
+    "#Write out overall scored output\n",
+    "concat_score.to_csv(\"./concatenated_scores_minus_PCs.csv\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "workhorse_python3",
+   "language": "python",
+   "name": "workhorse_python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.10"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
