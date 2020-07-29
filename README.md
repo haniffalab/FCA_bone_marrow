@@ -24,6 +24,6 @@ Raw data as FASTQ were uploaded to ArrayExpress (accession code: E-MTAB-9389). C
 
 Generalisable scripts are saved in the 'pipelines' directory. Please refer to pipelines/readme for further information on the methods used for each pipeline.
 
-Custom scripts for each figure (that do not fall under 'generalisable' pipeline scripts) are saved in the 'figures' directory, where you will see all analysis performed on raw count matrix files in order to produce figures for manuscript (with methodology not detailed in readme file - please refer to methods section of fetal BM manuscript for further information). Custom scripts written by SW unless otherwise stated (with 'IG'/'GR' in title of script).
+Custom scripts for each figure (that do not fall under 'generalisable' pipeline scripts) are saved in the 'figures' directory, where you will see all analysis performed on raw count matrix files in order to produce figures for manuscript (please refer to methods section of fetal BM manuscript for further information). Custom scripts written by SW unless otherwise stated (with 'IG'/'GR' in title of script).
 
 The web portal (https://developmentcellatlas.ncl.ac.uk/) files were made using the single cell analysis bundle (v1.0.0, https://github.com/haniffalab/scRNA-seq_analysis), set up on the School of Computing Science HPC Facility, Newcastle University.
