@@ -20,7 +20,7 @@ YS - yolk sac. FL - fetal liver. FBM - fetal bone marrow. ABM - adult bone marro
 
 ## Analysis scripts
 
-Cellranger count matrix files for 10X data were loaded into one object as described in https://github.com/haniffalab/FCA_liver for downstream analysis. 
+Cellranger count matrix files for FBM 10X data were loaded into one object as described in https://github.com/haniffalab/FCA_liver for downstream analysis. 
 
 Generalisable scripts are saved in the 'pipelines' directory. Please refer to pipelines/readme file for further information on the methods used for each pipeline. The figure panels created through use of each pipeline are detailed in readme file.
 
