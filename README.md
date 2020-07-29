@@ -26,4 +26,4 @@ Generalisable scripts are saved in the 'pipelines' directory. Please refer to pi
 
 Custom scripts for each figure (that do not fall under 'generalisable' pipeline scripts) are saved in the 'figures' directory, where you will see all analysis performed on raw count matrix files in order to produce each figure panel for manuscript, with exception of those detailed in 'pipelines' directory. Please refer to methods section of fetal BM manuscript for further information on methods used in each custom script. Custom scripts written by SW unless otherwise stated (with 'IG'/'GR' in title of script).
 
-The web portal (https://developmentcellatlas.ncl.ac.uk/) files were made using the single cell analysis bundle (v1.0.0, https://github.com/haniffalab/scRNA-seq_analysis), set up on the School of Computing Science HPC Facility, Newcastle University.
+<!--- The web portal (https://developmentcellatlas.ncl.ac.uk/) files were made using the single cell analysis bundle (v1.0.0, https://github.com/haniffalab/scRNA-seq_analysis), set up on the School of Computing Science HPC Facility, Newcastle University. ---!>
