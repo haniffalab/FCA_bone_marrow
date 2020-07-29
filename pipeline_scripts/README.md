@@ -1,10 +1,10 @@
 # This directory contains generalisable scripts re-used throughout the FBM manuscript for analysis of single cell data.
 
 ## pipeline_scrublet.ipynb
-Script to --
+This script was used to perform doublet detection using the scrublet package which estimates a scrublet score for each cell in the input data.
 
 ## pipeline_add_dr_harmony_clus_degs_annot.ipynb
-script to --
+This script was used to perform batch correction on all data and computes harmony corrected PC coordinates for an input data.
 
 ## pipeline_Negative_binomial_Quasi_binomial_test_barplot_stats.R
 Fig 1C, 2B, 3C, 5B, E5A, E6A
