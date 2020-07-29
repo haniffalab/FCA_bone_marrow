@@ -16,11 +16,11 @@ ABM and CB 10X data were sourced from the publicly available Immune Cell Atlas: 
 
 See Human Cell Atlas for more details.
 
-YS - yolk sac. FL - fetal liver. FBM - fetal bone marrow. ABM - adult bone marrow. CB - cord blood. DS = Downs syndrome
+YS - yolk sac. FL - fetal liver. FBM - fetal bone marrow. ABM - adult bone marrow. CB - cord blood. DS - Downs syndrome.
 
 ## Analysis scripts
 
-Raw data (FASTQ) for DS and non-DS FBM 10X were uploaded to ArrayExpress (accession code: E-MTAB-9389). Cellranger count matrix files for 10X data were loaded into one object as described in https://github.com/haniffalab/FCA_liver for downstream analysis. 
+Cellranger count matrix files for 10X data were loaded into one object as described in https://github.com/haniffalab/FCA_liver for downstream analysis. 
 
 Generalisable scripts are saved in the 'pipelines' directory. Please refer to pipelines/readme file for further information on the methods used for each pipeline. The figure panels created through use of each pipeline are detailed in readme file.
 
