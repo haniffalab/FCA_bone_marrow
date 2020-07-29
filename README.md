@@ -10,7 +10,7 @@ Yolk sac and fetal liver 10X data were sourced from a previous publication from 
 
 Thymus 10X data were sourced from Park et al 2020, "A cell atlas of human thymic development defines T cell repertoire formation".
 
-Downs and non-Downs FBM 10X were novel datasets produced for this study. Downs and non-Downs FBM SS2 were novel datasets produced for this study. Healthy FBM BCR-/TCR-enriched VDJ data were novel datasets produced for this study. These data (as FASTQ files) can be accessed at ArrayExpress (under provisional accession code: E-MTAB-9389).
+Downs and non-Downs FBM 10X were novel datasets produced for this study. Downs and non-Downs FBM SS2 were novel datasets produced for this study. Healthy FBM BCR-/TCR-enriched VDJ data were novel datasets produced for this study. The non DS and DS 10X data (as FASTQ files) can be accessed at ArrayExpress (under accession code: E-MTAB-9389).
 
 ABM and CB 10X data were sourced from the publicly available Immune Cell Atlas: https://data.humancellatlas.org/explore/projects/cc95ff89-2e68-4a08-a234-480eca21ce79
 
@@ -20,7 +20,7 @@ YS - yolk sac. FL - fetal liver. FBM - fetal bone marrow. ABM - adult bone marro
 
 ## Analysis scripts
 
-Cellranger count matrix files for FBM 10X data were loaded into one object as described in https://github.com/haniffalab/FCA_liver, then cells were clustered into major groups and analysed. Raw counts and cell type annotations were uploaded to ArrayExpress (provisional accession code: E-MTAB-9389).
+Cellranger count matrix files for FBM 10X data were loaded into one object as described in https://github.com/haniffalab/FCA_liver, then cells were clustered into major groups and analysed. Raw counts and cell type annotations were uploaded to ArrayExpress (accession code: E-MTAB-9389).
 
 Generalisable scripts are saved in the 'pipelines' directory. Custom scripts for each figure (that do not fall under 'generalisable' pipeline scripts) are saved in the 'figures' directory, where you will see all analysis performed on raw count matrix files in order to produce figures for manuscript. Custom scripts written by SW unless otherwise stated.
 
