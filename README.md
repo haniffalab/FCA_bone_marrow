@@ -10,7 +10,7 @@ YS and FL 10X data were sourced from a previous publication from the Haniffa Lab
 
 Thymus 10X data were sourced from Park et al 2020, "A cell atlas of human thymic development defines T cell repertoire formation".
 
-DS and non-DS FBM 10X were novel datasets produced for this study. DS and non-DS FBM SS2 were novel datasets produced for this study. FBM BCR-/TCR-enriched VDJ data were novel datasets produced for this study. The non-DS and DS 10X data (as FASTQ files) can be accessed at ArrayExpress (under accession code: E-MTAB-9389).
+DS/non-DS FBM 10X and FBM BCR-/TCR-enriched VDJ were novel datasets produced for this study (FASTQ and count matrices available at ArrayExpress E-MTAB-9389). DS and non-DS FBM SS2 were novel datasets produced for this study (FASTQ and count matrices available at ArrayExpress E-MTAB-9801).  
 
 ABM and CB 10X data were sourced from the publicly available Immune Cell Atlas: https://data.humancellatlas.org/explore/projects/cc95ff89-2e68-4a08-a234-480eca21ce79
 
