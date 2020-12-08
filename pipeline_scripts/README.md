@@ -26,6 +26,10 @@ The script takes as input a ranked list of genes (e.g DEGs ranked by log fold ch
 - The ranked genes as input (it is recommended that this list exceeds 50 genes)
 - The databases to acquire pathway-gene association data from (default is GO.BP)
 
+## pipeline_logist_general.ipynb
+The notebook describes a method for integrating data by label transfering based on ridge regulariased logistic regression. This approach enables us to fit a model on the annotated training/landscape/reference dataset to predict labels of a new dataset. Logistic regression can (1) be used to classify samples, (2) use different types of data (continuous and descrete measurements)and (3) also be used to assess what variables are useful for classifying samples. 
+This script was used to transfer labels from (1) CB CD34+ CITE-seq to FBM CD34+ CITE-seq, FBM scRNA-seq to FBM CITE-seq (3) FBM Down syndrome scRNA-seq to FBM Down syndrome CITE-seq. 
+
 ## pipeline_logistic_regression_alignment.ipynb
 Results not currently shown in current figures/described in manuscript.
 This script was used to compare analogous annotations between datasets to ensure accuracy and consistency of annotation and produces a heatmap weighted by probability of alignment derived from the binary assignment of all cells to a category by logistic regression. Written by IG.
