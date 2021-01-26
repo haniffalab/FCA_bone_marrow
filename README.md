@@ -1,6 +1,6 @@
 # FCA bone marrow project
 
-This repository contains all analysis scripts used to explore single cell datasets for: Jardine et al., 2020, "Intrinsic and extrinsic regulation of human fetal bone marrow haematopoiesis and perturbations in Down syndrome" (manuscript submitted).
+This repository contains all analysis scripts used to explore single cell datasets for: Jardine et al., 2021, "Intrinsic and extrinsic regulation of human fetal bone marrow haematopoiesis and perturbations in Down syndrome" (manuscript submitted).
 
 ## Datasets 
 
@@ -10,9 +10,9 @@ YS and FL 10X data were sourced from a previous publication from the Haniffa Lab
 
 Thymus 10X data were sourced from Park et al 2020, "A cell atlas of human thymic development defines T cell repertoire formation".
 
-DS/non-DS FBM 10X and FBM BCR-/TCR-enriched VDJ were novel datasets produced for this study (FASTQ and count matrices available at ArrayExpress E-MTAB-9389). DS and non-DS FBM SS2 were novel datasets produced for this study (FASTQ and count matrices available at ArrayExpress E-MTAB-9801).  
-
 ABM and CB 10X data were sourced from the publicly available Immune Cell Atlas: https://data.humancellatlas.org/explore/projects/cc95ff89-2e68-4a08-a234-480eca21ce79
+
+The raw and processed DS/non-DS fetal bone marrow 10x GEX/BCR-/TCR-enriched scRNA-seq data for this study are deposited at ArrayExpress or European Nucleotide Archive, with accession codes as follows: E-MTAB-9389, E-MTAB-10042 and ERP125305. Related accession codes for this study (including Smart-seq2 and CITE-seq data) are linked to the main accession at E-MTAB-9389 and include: E-MTAB-9801 for fetal BM Smart-seq2; XXX for BG fetal BM CD34+ CITE-seq / CB CD34+ CITE-seq / fetal BM MNC CITE-seq
 
 See Human Cell Atlas for more details.
 
