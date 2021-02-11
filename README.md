@@ -1,6 +1,6 @@
 # FCA bone marrow project
 
-This repository contains all analysis scripts used to explore single cell datasets for: Jardine and Webb et al., 2021, "Intrinsic and extrinsic regulation of human fetal bone marrow haematopoiesis and perturbations in Down syndrome" (manuscript submitted).
+This repository contains all analysis scripts used to explore single cell datasets for: Jardine and Webb et al., 2021, 'Intrinsic and extrinsic regulation of human fetal bone marrow haematopoiesis and perturbations in Down syndrome, (manuscript in revision).
 
 ## Datasets 
 
