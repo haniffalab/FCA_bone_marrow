@@ -1,4 +1,4 @@
-# This directory contains generalisable 'pipeline' scripts re-used throughout the FBM manuscript for analysis of single cell data.
+# This directory contains (1) generalisable 'pipeline' scripts re-used throughout the FBM manuscript for analysis of single cell data and (2) scripts neccessary for generation of public interactive webportals for visualisation of single cell data.
 
 ## Pipeline scripts
 
