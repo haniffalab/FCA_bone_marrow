@@ -35,21 +35,15 @@ The script takes metadata from sc objects as an input and requires it's user to 
 - the categorical variable for batch (e.g orig.ident/lane)
 The output is formated as two .csv files which contain the statistical output for the liklihood ratio test for signficance of proportion flux and spearman's rho test for characterising the trend direction. 
 
-
-
-
+## Webportal code (in folders)
 
 ### Interactive heatmap dotplot
-This script was used to compute the interactive heatmap portals located (https://developmentcellatlas.ncl.ac.uk/fbm_index). Written by IG.
-The script takes an option file as input containing:
-- a vector of categorical variables to be used (e.g cell.labels)
-
-An example of the options file may be found at (https://github.com/DoruMP/Fast-data-portals-for-scRNAseq-data)
+Scripts in the 'pipeline_interactive_heatmap_dotplot' folder were used to compute the interactive heatmap portals located (https://developmentcellatlas.ncl.ac.uk/fbm_index). Written by IG.
+The script takes an option file as input containing: a vector of categorical variables to be used (e.g cell.labels). An example of the options file may be found at (https://github.com/DoruMP/Fast-data-portals-for-scRNAseq-data)
 
 ### pipeline_web_portal
-This script was used to compute the gene expression portals located (https://developmentcellatlas.ncl.ac.uk/fbm_index). Written by IG.
+Scripts in the 'pipeline_web_portal' folder were used to compute the gene expression portals located (https://developmentcellatlas.ncl.ac.uk/fbm_index). Written by IG.
 The script takes an option file as input containing:
 - a vector of categorical variables to be used (e.g cell.labels)
 - a vector of the dimension reduction slots in the data (e.g X-umamp, X-PCA)
-
 An example of the options file may be found at (https://github.com/DoruMP/Fast-data-portals-for-scRNAseq-data)
