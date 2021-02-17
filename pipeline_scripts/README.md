@@ -5,7 +5,7 @@ For all 10x and CITE-seq (mRNA lane) data shown in manuscript figures.
 This script was used to perform doublet detection on all 10x data (including DS/non-DS fetal BM, ABM, CB) and CITE-seq (including total fetal BM and CD34+ fetal BM, FL, CB) using the scrublet package which estimates a scrublet score for each cell in the input data.
 
 ## pipeline_add_dr_harmony_clus_degs_annot.ipynb
-For all 10x data shown in figures.
+For all 10x data shown in figures. Written by SW (not novel - heavily borrowing from publicly available Scanpy tutorial code)
 This script was used to perform batch correction on all data and computes harmony corrected PC coordinates for an input scRNA-seq dataset.
 
 ## pipeline_Negative_binomial_Quasi_binomial_test_barplot_stats.R
@@ -24,7 +24,7 @@ The notebook describes a method for integrating data by label transfering based 
 This script was used to transfer labels to all single cell datastes used in this study, with fetal BM 10x data as reference. 
 
 ## pipeline_logistic_regression_alignment.ipynb
-For Fig E1D, E5D, E7B
+For Fig E1D, E5D, E7B.
 This script was used to compare analogous annotations between datasets to ensure accuracy and consistency of annotation and produces a heatmap weighted by probability of alignment derived from the binary assignment of all cells to a category by logistic regression. Written by IG.
 The script takes as input:
 - the analogous categorical variable in each dataset to be compared (e.g cell.labels)
