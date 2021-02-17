@@ -33,7 +33,7 @@ The script takes metadata from sc objects as an input and requires it's user to 
 - the categorical variable to test between (e.g developmental_stage/age_groups)
 - the categorical variable which is in flux (e.g cell.labels, lineage)
 - the categorical variable for batch (e.g orig.ident/lane)
-The output is formated as two .csv files which contain the statistical output for the like-lihood ratio test for signficance of proportion flux and spearman's rho test for characterising the trend direction. 
+The output is formated as two .csv files which contain the statistical output for the likelihood ratio test for signficance of proportion flux and spearman's rho test for characterising the trend direction. 
 
 ## Webportal code (in folders)
 
@@ -45,5 +45,5 @@ The script takes an option file as input containing: a vector of categorical var
 Scripts in the 'pipeline_web_portal' folder were used to compute the gene expression portals located (https://developmentcellatlas.ncl.ac.uk/fbm_index). Written by IG.
 The script takes an option file as input containing:
 - a vector of categorical variables to be used (e.g cell.labels)
-- a vector of the dimension reduction slots in the data (e.g X-umamp, X-PCA)
+- a vector of the dimension reduction slots in the data (e.g X-umap, X-PCA)
 An example of the options file may be found at (https://github.com/DoruMP/Fast-data-portals-for-scRNAseq-data)
