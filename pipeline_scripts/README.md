@@ -18,7 +18,7 @@ For all 10x data shown in figures. Written by SW (not novel - heavily borrowing 
 This script was used to perform batch correction on all data and computes harmony corrected PC coordinates for an input scRNA-seq dataset.
 
 ### pipeline_4_logist_general_IG.ipynb
-For annotation confirmation of all single cell datasets used in this study, with fetal BM 10x data as reference. The notebook describes a method for integrating data by label transfering based on ridge regulariased logistic regression. This approach enables us to fit a model on the annotated training/landscape/reference dataset to predict labels of a new dataset. Logistic regression can (1) be used to classify samples, (2) use different types of data (continuous and descrete measurements)and (3) also be used to assess what variables are useful for classifying samples. 
+For annotation confirmation of all single cell datasets used in this study, with fetal BM 10x data as reference. Written by IG and tested with input from SW/MQL. The notebook describes a method for integrating data by label transfering based on ridge regulariased logistic regression. This approach enables us to fit a model on the annotated training/landscape/reference dataset to predict labels of a new dataset. Logistic regression can (1) be used to classify samples, (2) use different types of data (continuous and descrete measurements)and (3) also be used to assess what variables are useful for classifying samples. 
 
 ### pipeline_5_logistic_regression_alignment_IG.ipynb
 For Fig E1D, E5D, E7B.
@@ -33,7 +33,7 @@ The script takes metadata from sc objects as an input and requires it's user to 
 - the categorical variable to test between (e.g developmental_stage/age_groups)
 - the categorical variable which is in flux (e.g cell.labels, lineage)
 - the categorical variable for batch (e.g orig.ident/lane)
-The output is formated as two .csv files which contain the statistical output for the liklihood ratio test for signficance of proportion flux and spearman's rho test for characterising the trend direction. 
+The output is formated as two .csv files which contain the statistical output for the like-lihood ratio test for signficance of proportion flux and spearman's rho test for characterising the trend direction. 
 
 ## Webportal code (in folders)
 
