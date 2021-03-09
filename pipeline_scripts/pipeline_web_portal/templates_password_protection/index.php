@@ -12,12 +12,16 @@ body {
    #div_left {
     float: left;
 }
-
+#div_right {
+	margin-left: 20em;
+	position: relative;
+}
 #canvasdiv {
 	overflow-x: scroll;
 	overflow-y: scroll;
 	max-height: 90vh;
 }
+
 #typesControlPanel {
  height: 25em;
  overflow-y: auto;
@@ -28,7 +32,6 @@ body {
     background-color: black;
     color : white;
 }
-
   </style>
 </head>
 
@@ -85,36 +88,24 @@ body {
   </div>
   	
   <div id = "div_right">
+  	<div id = "geneSelector">
+		<h4>Select genes to explore:</h4>
+		<gene-selector buttons="remove" stylesheet="/datasets/fbm_updated/diseases/gene-selector.css" data-init="CD34, SPINK2, PRSS57, ALAS2, GYPA, KLF1, GP9, PLEK, ITGA2B, VPREB1, IGLL1, CD79A, CLEC10A, CD1C, HLA-DPA1, GATA2, HDC, PRG2, NCF1, ITGAM, PGLYRP1, CD14, CD68, CD52, CD3E, TRBC1, GZMA, MMP9, KDR, CTHRC1">
+			<endpoint name="genes" function="findGenes" mode="list" property="results" empty="msg:No matching genes for this dataset.">Search Gene Symbols</endpoint>
+			<endpoint name="family" function="findGeneFamily" mode="groups" property="results" action="replace" empty="msg:No gene family matches this search." searchblank>Search for a gene family</endpoint>
+			<endpoint name="diseases" url="/datasets/fbm_updated/diseases/fetch_disease_data.php" preprocessor="verifyDiseaseData" parameter="term" property="data" mode="groups" action="replace" empty="msg:No matching diseases in this database." searchblank>Search for Diseases</endpoint>
+	    </gene-selector>
+  	</div>
   <div>
   	<b>Colour by:</b>
   		<label for='colourType_t'><input type='radio' name='colourType' id='colourType_t' onchange='setColourBy(value)' value='cell_type' checked />Cell type</label>
   		<label for='colourType_g'><input type='radio' name='colourType' id='colourType_g' onchange='setColourBy(value)' value='gene_expression' />Gene expression</label>
   	</div>
-  	<table id = "geneSelectorTable">
-  		<tr>
-  			<td>
-  				<label for='geneFamilySelector'>Gene family:</label>
-  			</td>
-  			<td>
-  				<select name='geneFamilySelector' id='geneFamilySelector' onchange='selectFamily(value)'>		
-  				</select>
-  			</td>
-  		</tr>
-  		<tr>
-  			<td>
-  				<label for='geneSymbolSelector'>Gene symbol:</label>
-  			</td>
-  			<td>
-  				<input type = 'text' id='genelist_input' name = 'geneSymbolSelector_datalist' list='geneSymbolSelector_datalist' onchange='getGeneExpression(this)'>
-  				<datalist id = 'geneSymbolSelector_datalist'>
-  					<select onchange = 'getGeneExpression(this)' id ='geneSymbolSelector'></select>
-  				</datalist>
-  			</td>
-  		</tr>
-  	</table>
+	<div>
   	<label for = 'bgColorRadio_white'><input id = 'bgColorRadio_white' name = "bgColorRadio" type = "radio" value = 'white' onchange='setBackground(value)' checked/>White background </label>
   	<label for = 'bgColorRadio_dark'><input id = 'bgColorRadio_dark' name = "bgColorRadio" type = "radio" value = 'dark' onchange='setBackground(value)' />Dark background </label>
   	<br/><span id='expression_scale'></span>
+	</div>
   	<div>
   		Choose coordinates: <select onchange = 'getCoordinates(value)'>
   			<?php
@@ -133,7 +124,40 @@ body {
   	</div>
   	<div id='canvasdiv'><canvas id='canvas' width=500 height=500></canvas></div>
   </div>
+  <script type="module">
+import { ValueSelector } from '/datasets/fbm_updated/diseases/ValueSelector.js';
+customElements.define("gene-selector", ValueSelector);
+</script>
+
+<script>
+function findGenes(term) {
+	return {
+		results: gene_list.filter(g => g.startsWith(term))
+	}
+}
+
+function findGeneFamily(term) {
+	let output = {};
+	Object.keys(gene_families).forEach(f => { if (f.startsWith(term)) output[f] = gene_families[f] });
+	return {
+		results: output
+	}
+}
   
+function verifyDiseaseData(data) {
+	let diseases = Object.keys(data.data);
+	diseases.forEach(d => { 
+	    data.data[d] = verifyData(data.data[d]);
+	    if (data.data[d].length == 0) delete data.data[d];
+	});
+	return data;
+}
+
+function verifyData(data) {
+	return data.filter(g => Boolean(g) && gene_list.includes(g));
+}
+
+</script>
   <script id='vertex-shader' type='x-shader/x-fragment'>
   	attribute vec4 a_Position;
   	attribute vec3 a_Color;
@@ -539,13 +563,9 @@ body {
   	
   	function getGeneExpression(caller){
   		value = caller.value;
-  		caller_id = caller.id
-  		if (caller.id == 'geneSymbolSelector'){
-  			genelist_input.value = value
-  		}else{
-  			geneSymbolSelector.value = value
-  		}
+
   		gene_expression = []
+
   		try {
 			request = new XMLHttpRequest();
 		}catch(e){
@@ -585,18 +605,12 @@ body {
 						scale_context.fillText('0', 10, 10)
 						scale_context.fillText(parseInt(10 * gene_expression_scale) / 10, 180, 10)
 					}else{expression_scale.innerHTML = ""}
-					if (geneFamilySelector.value != 'All'){
-						if(gene_families[geneFamilySelector.value].indexOf(genelist_input.value) == -1){
-							expression_scale.innerHTML = 'Gene entered is not part of selected gene family!'
-						}
-					}
 					if (gene_list.indexOf(genelist_input.value) == -1){
 						expression_scale.innerHTML = 'Gene name mistyped or does not exist!'
 					}
 					if (genelist_input.value == ''){
 						expression_scale.innerHTML = "Choose a gene"
 					}
-					geneSymbolSelector_datalist.value = genelist_input.value
 				}
 			}
 		}
@@ -653,29 +667,13 @@ body {
 		request.send(null)
   	}
   	
-  	function selectFamily(value){
-  		geneSymbolSelector_innerHTML = "<select onchange = 'getGeneExpression(this)' id ='geneSymbolSelector'>"
-  		if (value == 'All'){
-  			gene_list.forEach(function(gene_name, i){
-  				geneSymbolSelector_innerHTML = geneSymbolSelector_innerHTML + "<option value = '" + gene_name + "'>" + gene_name + "</option>"
-  			})
-  		}else{
-  			family_genes = gene_families[value]
-  			family_genes.forEach(function(gene_name, i){
-  				geneSymbolSelector_innerHTML = geneSymbolSelector_innerHTML + "<option value = '" + gene_name + "'>" + gene_name + "</option>"
-  			})
-  		}
-  		geneSymbolSelector_innerHTML = geneSymbolSelector_innerHTML + '</select>'
-  		geneSymbolSelector.innerHTML = geneSymbolSelector_innerHTML
-  		if (canvas_init){getGeneExpression(genelist_input)}
-  	}
   	
   	var category_type_colors = [],
   		type_indices = [],
   		gene_expression = [],
   		dr_coordinates = [],
   		categorySelectMenu = document.getElementById('categorySelectMenu'),
-  		genelist_input = document.getElementById('genelist_input'),
+  		genelist_input = document.querySelector('gene-selector'),
   		expression_scale = document.getElementById('expression_scale'),
   		canvas             = document.getElementById('canvas'),
   		typesControlPanel  = document.getElementById('typesControlPanel'),
@@ -694,14 +692,14 @@ body {
   		gene_expression_scale = 0,
   		canvas_init = false;
   		
-  	// population gene families
-  	geneFamilySelector_innerHTML = "<option value = 'All'>All</option>"
-  	for(var gene_family_name in gene_families){
-  		geneFamilySelector_innerHTML = geneFamilySelector_innerHTML +  "<option value = '" + gene_family_name + "'>" + gene_family_name + "</option>"
-  	}
-  	geneFamilySelector.innerHTML = geneFamilySelector_innerHTML
+	Object.defineProperty(genelist_input, "value", {get: function() {
+		return this.selectedItems.length > 0? this.selectedItems[0]: '';
+	}})
   	
-  	selectFamily('All')
+	genelist_input.addEventListener("update", function(u) {
+		if (this.selectedItems.length == 0 && this.items.length > 0) this.select(this.items[0]);
+		if (document.querySelector("input[name='colourType']:checked").value == "gene_expression") getGeneExpression(genelist_input);
+	});
   	
   	getCoordinates(first_dr)
   	updateCategories(categorySelectMenu.value)
@@ -714,6 +712,9 @@ body {
 	draw()
 	
 	canvas_init = true;
+	
+	// safari does not support datalist
+	// see at https://www.w3schools.com/tags/tryit.asp?filename=tryhtml5_datalist
 	
 	var curTxt=document.createElement('div');
     curTxt.id="cursorText";
@@ -743,10 +744,7 @@ body {
 	   curTxt.style.top  = event.pageY - curTxt.offsetHeight + "px"
 	})
 	
-	// safari does not support datalist
-	// see at https://www.w3schools.com/tags/tryit.asp?filename=tryhtml5_datalist
-  
   </script>
-  <div style="float: clear;""><hr><span style="font-size:0.8em;">This data portal was created using the web_portal tool (<a href="https://github.com/DoruMP/Fast-data-portals-for-scRNAseq-data">github link</a>) developed by Dorin-Mirel Popescu</span><hr></div>
+  <div style="float: clear;"><hr><span style="font-size:0.8em;">This data portal was created using the web_portal tool (<a href="https://github.com/DoruMP/Fast-data-portals-for-scRNAseq-data">github link</a>) </span><hr></div>
 </body>
 </html>

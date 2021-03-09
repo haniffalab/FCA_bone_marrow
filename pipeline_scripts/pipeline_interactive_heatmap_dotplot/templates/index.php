@@ -65,11 +65,12 @@
 				<li>The "Cell type selection menu" allows switching on/off of particular cell types. Changes will be reflected in the plots immediately. If there are too many cell types, use to horizontal scrollbar to navigate the list of cell types.</li>
 				<li>In the "Cell type selection menu" there is also the possibility to write or copy/paste the list desired cell types</li>
 				<li>The "Gene selection menu" contains functionalities for editing the list of genes that are plotted</li>
-				<li>The "Add new gene" adds a randomly chosen gene to the list. The plots are redraw to include the additional gene</li>
-				<li>Alternatively a list of genes can be pasted in the text box at right of the button mentioned above. The list can have the gene names separated by comma, space, semicolon or tab</li>
-				<li>Each gene being plotted has a dedicated field which indicates its name and a "Remove" button</li>
-				<li>By changing the gene name in any of this boxes, if the new typed name is a valid gene name then the plots will be update to reflect this change</li>
-				<li><b>Finally the user can click-chose any gene or cell type directly on the plot and reorder them by dragging</b></li>
+				<li>Each gene being plotted has a dedicated field which indicates its name. As your mouse moves over a gene its name is boldened and a "remove" button will appear, allowing you yo remove genes from the plot. You can also clear the list using the "Remove All" button.</li>
+				<li>Using the dropdown list you can choose to search for Gene symbols, search for diseases, or type/paste a list of gene symbols.</li>
+				<li>As you search for gene symbols they will be added to the list. To add a gene, click its name in the search results. Alternatively, if you've typed a full gene symbol pressing enter will also add it to the list.</li>
+				<li>If you search for diseases, the number of related genes is shown in brackets after the gene name. Clicking an option in the list will remove any currently selected genes and add all the disease-related genes to the plot.</li>
+				<li>Finally, a list of genes can be pasted or typed in the text box. The list should have the gene names separated by commas.</li>
+				<li><b>You can click-chose any gene or cell type directly on the plot and reorder them by dragging</b></li>
 				<li>Plots can be saved as png files by right clicking on plot area and choosing "Save as"</li>
 				<li>At the bottom of the page there is a list of genes and a list of cell types used in the plot. These lists can be copy/pasted and saved for easy restoring of the plots in a future session.</li>
 			</ul></div>
@@ -81,7 +82,7 @@
     <form>
 	<div>Layout: <select onchange = 'setLayout(this.value)'>
 		<option value = 'xcells'>'Cells on X; Genes on Y'<option>
-		<option value = 'xgenes'>'Cells on Y; Genes on X'<option>
+		<option value = 'xgenes' selected>'Cells on Y; Genes on X'<option>
 	</select>
 	Plot type: <select onchange = 'setPlotType(this.value)'>
     <option value = 'spotplot'>Dot plot</option>
@@ -132,9 +133,12 @@
 		<input type ='text' id = 'cellTypeListReader' size = '20' />
 	</div>
 	<div class = 'menuContainer'><div><b>Gene selection menu</b></div><hr>
-		<input type = 'button' value = 'Add new gene' onclick = 'generateNewGeneButton()'/>
-		 or enter a list of genes here and press enter: <input type ='text' id = 'geneListReader' size = '20' /><hr>
-	<div id = 'gene-menu'></div></div>
+	    <gene-selector multiple autoselect buttons="remove" data-init="CD34, SPINK2, PRSS57, ALAS2, GYPA, KLF1, GP9, PLEK, ITGA2B, VPREB1, IGLL1, CD79A, CLEC10A, CD1C, HLA-DPA1, GATA2, HDC, PRG2, NCF1, ITGAM, PGLYRP1, CD14, CD68, CD52, CD3E, TRBC1, GZMA, MMP9, KDR, CTHRC1">
+		<endpoint name="genes" function="findGenes" mode="list" property="results" empty="msg:No matching genes for this dataset.">Search Gene Symbols</endpoint>
+		<endpoint name="diseases" url="/datasets/fbm_updated/diseases/fetch_disease_data.php" preprocessor="verifyDiseaseData" parameter="term" property="data" mode="groups" action="replace" empty="msg:No matching diseases in this database." searchblank>Search for Diseases</endpoint>
+		<endpoint name="list" function="processGeneList" mode="list" property="results" empty="noaction" trigger="enter">Paste a list of genes</endpoint>
+	    </gene-selector>
+	</div>
 	<div><canvas id = 'interactive-canvas' width = '700' height = '300' ></canvas></div>
 	<div>
 		<div>List of cell types: 
@@ -144,12 +148,48 @@
 			<ul><li id = 'output_div_genes' ></li></ul>
 		</div>
 	</div>
+<script type="module">
+import { ValueSelector } from '/datasets/fbm_updated/diseases/ValueSelector.js';
+customElements.define("gene-selector", ValueSelector);
+</script>
 
+<script>
+function findGenes(term) {
+	return {
+		results: Object.keys(expression_data).filter(k => k.startsWith(term))
+	}
+}
+
+function processGeneList(term) {
+    let genes = term.split(",");
+    genes = genes.map(s => s.trim());
+    let selector = document.querySelector("gene-selector");
+    selector.find(".header").textContent = "Your saved gene list:";
+    selector.find(".holder").classList.add("hidden");
+    selector.removeAll();
+    selector.push(genes);
+    selector.find("input[type='text']").value = "";
+    return { results: [] } // returning an empty list for this endpoint will prevent any further action.
+}
+
+function verifyDiseaseData(data) {
+	let diseases = Object.keys(data.data);
+	diseases.forEach(d => { 
+	    data.data[d] = verifyData(data.data[d]);
+	    if (data.data[d].length == 0) delete data.data[d];
+	});
+	return data;
+}
+
+function verifyData(data) {
+	return data.filter(g => Boolean(g) && Boolean(expression_data[g]));
+}
+</script>
 	<script type = 'text/javascript'>
 		// global parameters
 		var canvas             = document.getElementById('interactive-canvas'),	
 			context            = canvas.getContext('2d'),
-			layout             = 'xcells', //other value is xgenes
+			layout             = 'xgenes', //other value is xcells
 			plotType           = 'spotplot', // other value is heatmap
 			selectedCellTypes  = [], // a named array. names are cell names, and values are index position on the axis
 			selectedGenes      = [], // a named array. names are gene names, and values are index position on the axis
@@ -252,6 +292,14 @@
 				for (key in selectedCellTypes){rowLabels.push(key)}
 				for (key in selectedGenes){colLabels.push(key)}
 			}
+			
+			// if we have no cells or no genes clear the canvas and return.
+			if (rowLabels.length == 0 || colLabels.length == 0) {
+			    context.fillStyle = '#ffffff' // should change to white at the end
+    			context.fillRect(0, 0, canvas.width, canvas.height)
+    			return;
+    	    }
+
 			// update padX based on row labels
 			context.font = labelsFont;
 			padX = 5 + rowLabels.map(function(name){return context.measureText(name).width}).reduce(function(num1, num2){return Math.max(num1, num2)})
@@ -345,7 +393,7 @@
 			for (key in selectedGenes){highestPos = Math.max(highestPos, selectedGenes[key])}
 			highestPos += 1
 			selectedGenes[gene_name] = highestPos;
-			updateGeneButtons();
+			//updateGeneButtons();
 			if (partyStarted){
 				allocateRowAndColumnsPositions()	
 			}
@@ -379,7 +427,7 @@
 								}
 								// update the gene buttons and the plot
 								selectedGenes = newSelectedGenes
-								updateGeneButtons()
+								//updateGeneButtons()
 								draw()
 							}else{ // case gene already in selected genes
 								// generate a message for the user
@@ -422,7 +470,7 @@
 				}
 			}
 			selectedGenes = newSelectedGenes;
-			updateGeneButtons()
+			//updateGeneButtons()
 			allocateRowAndColumnsPositions()	
 		}
 	
@@ -571,7 +619,7 @@
   				selectedCellTypes = sortArraybyAnotherArray(selectedCellTypes, row_coordinates)
   			}
   			allocateRowAndColumnsPositions()
-  			updateGeneButtons()
+  			//updateGeneButtons()
   		}
   		
   		function dragCol(event){
@@ -590,7 +638,7 @@
   				selectedCellTypes = sortArraybyAnotherArray(selectedCellTypes, col_coordinates)
   			}
   			allocateRowAndColumnsPositions()
-  			updateGeneButtons()
+  			//updateGeneButtons()
   		}
   		
   		// sorts a named array by a second array of values
@@ -625,14 +673,22 @@
 				cellMenu.appendChild(cell_span)
 			})
 			
-			// fire procedure for making gene selection menu
-			for (i=0; i < 10; i++){generateNewGeneButton()}
+			// initialise selectedGenes and selectedCellTypes from starting values:
+			let initialCellTypeNames = Array.from(document.querySelectorAll("cell-menu input[type='checkbox']"), c => c.value);
+			for (var i=0;i<initialCellTypeNames.length;i++){
+				selectedCellTypes[initialCellTypeNames[i]] = i
+			}
+
+			let initialGeneSymbols = verifyData(document.querySelector("gene-selector").items);
+			for (var i=0;i<initialGeneSymbols.length;i++){
+				selectedGenes[initialGeneSymbols[i]] = i
+			}
+
 			// everything should be ready to get the interactivity started
 			partyStarted = true
-			// after making cell and gene menus populate placeholders for genes and cell types
-			updateSelectedCellTypes() 
-			// allocate rows and columns - implicitly draws the canvas
 			allocateRowAndColumnsPositions()
+
+
 			// add event listeners
 			canvas.addEventListener('mousedown', function(event){
 				var coordinates = getEventCoordinates(event),
@@ -665,6 +721,7 @@
 					}
 				}
 			})
+
 			// add event listener to cell type gene list reader 
 			cellTypeListReader.onkeypress = function(event){
 				if (event.which == 13){
@@ -724,7 +781,7 @@
 							selectedCellTypes[cellType_list_input[i]] = i
 						}
 						allocateRowAndColumnsPositions()
-						updateGeneButtons()
+						//updateGeneButtons()
 						// update the cell types radio buttons
 						cell_buttons = cellMenu.children;
 						for(var i=0;i<cell_buttons.length;i++){
@@ -749,67 +806,38 @@
 					}
 				}
 			}
-			
+
 			// add event listener to the gene list reader text area so that it can take list of genes as input for selected genes
-			geneListReader.onkeypress = function(event){
-				if (event.which == 13){
-					var gene_list_input  = geneListReader.value
-					geneListReader.value = ''
-					gene_list_input = gene_list_input.replace(/ /g, 'splitpoint')
-					                                 .replace(/,/g, 'splitpoint')
-					                                 .replace(/;/g, 'splitpoint')
-					                                 .replace(/\t/g, 'splitpoint')
-								                     .split('splitpoint');
-					// remove all the empty strings from the gene list
-					new_gene_list_input = []
-					for(var i=0;i<gene_list_input.length;i++){if(gene_list_input[i] != ''){new_gene_list_input.push(gene_list_input[i])}}
-					gene_list_input = new_gene_list_input;
-					// check if all gene in the list exist in the data
-					var allInList      = true,
-						gene_not_found = [];
-					for(var i=0;i<gene_list_input.length;i++){
-						if (gene_names.indexOf(gene_list_input[i]) == -1){allInList = false; gene_not_found.push(gene_list_input[i])}
-					}
-					// check for repeats in the gene list
-					var counter_array = []
-					for (var i = 0; i < gene_list_input.length; i++){
-						gene_name = gene_list_input[i]
-						if (gene_name in counter_array){counter_array[gene_name] += 1}else{counter_array[gene_name] = 1}
-					}
-					var duplicates      = [],
-						duplicatesExist = false;
-					for(key in counter_array){if(counter_array[key] > 1){duplicates.push(key); duplicatesExist = true}}
-					if (duplicatesExist){
-						msg = ''
-						for (var i=0; i < duplicates.length; i++){
-							msg = msg + duplicates[i] + ', '
-						}
-						msg = 'There are duplicates: ' + msg
-						geneListReader.value = msg;
-						return 1;
-					}
-					// if all are in list and the are not repeats render the plot and make the gene buttons
-					if (allInList && gene_list_input.length > 0){
-						selectedGenes = []
-						for (var i=0;i<gene_list_input.length;i++){
-							selectedGenes[gene_list_input[i]] = i
-						}
-						allocateRowAndColumnsPositions()
-						updateGeneButtons()
-					}
-					else{
-						var msg = '';
-						for (i=0;i<gene_not_found.length;i++){
-							msg = msg + gene_not_found[i] + ', '
-						}
-						msg = 'Genes not found: ' + msg;
-						geneListReader.value = msg;
-					}
-					if(gene_list_input.length == 0){
-						geneListReader.value = ''
-					}
+			document.querySelector("gene-selector").addEventListener("update", function(u) {
+				var gene_list_input  = this.items.slice();
+
+				gene_list_input = gene_list_input.filter(gene => Boolean(expression_data[gene])); // exclude values not in the dataset
+				gene_list_input = gene_list_input.filter(gene => Boolean(gene)); // exclude missing & blank values (i.e.
+				gene_list_input = gene_list_input.filter((gene, i, list) => list.indexOf(gene) === i) // remove duplicate values N.B. the gene-selector component doesn't allow duplicates, but this logic could be reused with other components that don't enforce that.
+
+				// by this point we have a cleaned list of unique genes that are in the dataset to display on the chart.
+
+				// if there are existing genes we don't want to re-order the chart, so we order and filter appropriately:
+				if (Object.keys(selectedGenes).length > 0) {
+					// get a sorted list of existing gene names in selectedGenes;
+					let currGenes = Object.keys(selectedGenes.sort((a,b) => a-b));
+					// filter only genes that are in the input list (i.e. remove any genes that aren't)
+					currGenes = currGenes.filter(gene => gene_list_input.includes(gene))
+					// concatenate with genes from input that *aren't* in selected genes:
+					currGenes = currGenes.concat(gene_list_input.filter(gene => !currGenes.includes(gene)));
+
+					gene_list_input = currGenes;
 				}
-			}
+
+				// clear selected genes then reallocate new positions from input:
+				selectedGenes = [];
+				for (var i=0;i<gene_list_input.length;i++){
+					selectedGenes[gene_list_input[i]] = i
+				}
+				
+				// update chart
+				allocateRowAndColumnsPositions()
+			});
 		}
 	</script>
 	<div style="float: clear;""><hr><span style="font-size:0.8em;">This data portal was created using the interactive_heatmap_dotplot tool (<a href="https://github.com/DoruMP/Fast-data-portals-for-scRNAseq-data">github link</a>) developed by Dorin-Mirel Popescu and Issac Goh, maintained by Issac Goh</span><hr></div>
