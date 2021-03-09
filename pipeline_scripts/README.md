@@ -41,12 +41,14 @@ The output is formated as two .csv files which contain the statistical output fo
 Scripts in the 'pipeline_interactive_heatmap_dotplot' folder were used to compute the interactive heatmap portals located (https://developmentcellatlas.ncl.ac.uk/fbm_index). Written by IG.
 The script takes an option file as input containing: a vector of categorical variables to be used (e.g cell.labels). An example of the options file may be found at (https://github.com/DoruMP/Fast-data-portals-for-scRNAseq-data)
 
-### pipeline_web_portal
+### Web portal
 Scripts in the 'pipeline_web_portal' folder were used to compute the gene expression portals located (https://developmentcellatlas.ncl.ac.uk/fbm_index). Written by IG.
 The script takes an option file as input containing:
 - a vector of categorical variables to be used (e.g cell.labels)
 - a vector of the dimension reduction slots in the data (e.g X-umap, X-PCA)
 An example of the options file may be found at (https://github.com/DoruMP/Fast-data-portals-for-scRNAseq-data)
+
+----
 
 #### Gene and Disease selector
 The web portals presented here make use of the Newcastle University RSE Team's ValueSelector web component, which can be downloaded from their repository at https://github.com/NewcastleRSE/WebComponents.
