@@ -48,7 +48,7 @@ The script takes an option file as input containing:
 - a vector of the dimension reduction slots in the data (e.g X-umap, X-PCA)
 An example of the options file may be found at (https://github.com/DoruMP/Fast-data-portals-for-scRNAseq-data)
 
-### Gene and Disease selector
+#### Gene and Disease selector
 The web portals presented here make use of the Newcastle University RSE Team's ValueSelector web component, which can be downloaded from their repository at https://github.com/NewcastleRSE/WebComponents.
 
 This flexible component has allowed us to integrate several methods for finding groups of genes, including discovery of disease-related genes from a database collated specifically for this paper. For more information please contact the authors.
