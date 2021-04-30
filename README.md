@@ -1,6 +1,6 @@
 # FCA bone marrow project
 
-This repository contains all analysis scripts used to explore single cell datasets for: Jardine and Webb et al., 2021, 'Intrinsic and extrinsic regulation of human fetal bone marrow haematopoiesis and perturbations in Down syndrome', (manuscript in revision).
+This repository contains all analysis scripts used to explore single cell datasets for: Jardine and Webb et al., 2021, 'Development of blood and immune cells in the human fetal bone marrow and perturbation in Down syndrome', (in revision).
 
 ## Single cell datasets 
 
@@ -20,4 +20,4 @@ Generalisable analysis scripts are saved in the 'pipelines' directory. Please re
 
 Custom scripts for each figure (that do not fall under 'generalisable' pipeline scripts) are saved in the 'figures' directory, where you will see all analysis performed on raw count matrix files in order to produce each figure panel for manuscript, with exception of those detailed in 'pipelines' directory. Please refer to methods section of fetal BM manuscript for further information on methods used in each custom script. 
 
-The authors of custom scripts (whether novel approaches or adapted from published workflows) are noted by initials appended to script filename as follows: Simone Webb (SW), Gary Reynolds (GR), Issac Goh (IG), Mariana Quiroga Londono (MQL), Emma Dann (ED), Iwo Kucinski (IK).
+The authors of custom scripts (whether novel approaches or adapted from published workflows) are noted by initials appended to script filename as follows: Simone Webb (SW), Issac Goh (IG), Mariana Quiroga Londono (MQL), Gary Reynolds (GR), Emma Dann (ED), Iwo Kucinski (IK).
