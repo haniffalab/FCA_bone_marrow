@@ -194,7 +194,9 @@ for(i in 1:length(unique(x$variable))) {
         }
         tryCatch(anova(nb, test = "LRT")$`Pr(>Chi)`[2],error=function(e){pv_temp[ref]<<-"NA"})
         pv_temp[ref] = anova(nb, test = "LRT")$`Pr(>Chi)`[2]
-       score_results[,cell] <- pv_temp
+       #score_results[,cell] <- pv_temp
+       #Push Bonferroni correction to script instead of in post processing
+       score_results[,cell] <- p.adjust(pv_temp, method =  "bonferroni", n = length(p))
       }
     }
       #Compute overall score
