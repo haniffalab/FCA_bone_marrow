@@ -17,7 +17,7 @@ External datasets incorporated in this study include: i)  Adult BM and cord bloo
 
 YS - yolk sac. FL - fetal liver. BM - fetal bone marrow. ABM - adult bone marrow. CB - cord blood. DS - Down syndrome.
 
-## Analysis scripts
+## Code availability
 
 Cellranger count matrix files for FBM 10X data were loaded into one object as described in the [Haniffa Lab Github](https://github.com/haniffalab/FCA_liver) for downstream analysis. 
 
