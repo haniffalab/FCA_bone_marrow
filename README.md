@@ -7,10 +7,10 @@ This repository contains all analysis scripts used to explore single cell datase
 
 Single cell datasets used in this study include: 10X data (YS, FL, FBM, DS FBM, thymus, ABM, CB), SS2 data (FBM), and BCR-/TCR-enriched VDJ data (FBM) and CITE-seq data (CD34+ FBM/FL/CB and FBM total). 
 
-Our webportal (https://fbm.cellatlas.io/) makes novel single cell datasets generated for this study publicly available with a searchable database of genes implicated in inherited blood and immune cell disorders.
-
 #### Novel data accessibility
 There are no restrictions on data availability for novel data presented in this study. The raw and processed DS/non-DS FBM GEX/BCR-/TCR-enriched droplet-based scRNA-seq data for this study are deposited at EMBL-EBI ArrayExpress, EMBL-EBI ENA, and NCBI GEO, with accession codes as follows: [E-MTAB-9389](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-9389/), [E-MTAB-10042](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-10042/) and [ERP125305](https://www.ebi.ac.uk/ena/browser/view/PRJEB41514). Related accession codes for this novel data in this study (including plate-based scRNA-seq and CITE-seq) are linked to the main accession at [E-MTAB-9389](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-9389/) and include: [E-MTAB-9801](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-9801/) for FBM Smart-seq2 scRNA-seq; [GSE166895](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE166895) for CD34+ (FBM, FL and CB) CITE-seq; [GSE166895](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE166895) for FBM (total) CITE-seq. 
+
+Our webportal (https://fbm.cellatlas.io/) makes all novel single cell datasets generated for this study (except FBM SS2) publicly available for exploration (and download as Scanpy h5ad objects with transformed counts) with a searchable database of genes implicated in inherited blood and immune cell disorders. 
 
 Metadata for datasets described above are provided in manuscript Supplementary Table 1. All source data are available in the accompanying source data file, unless manuscript or figure legend refers to a Supplementary Table. 
 
