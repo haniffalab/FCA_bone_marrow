@@ -1,7 +1,7 @@
 # FCA bone marrow study
-## [Jardine and Webb et al., 2021, 'Blood and immune development in human fetal bone marrow and in Down syndrome' (Nature, 2021)](https://www.nature.com/articles/s41586-021-03929-x)
+## [Jardine and Webb et al., 2021, Nature, 'Blood and immune development in human fetal bone marrow and in Down syndrome'](https://www.nature.com/articles/s41586-021-03929-x)
 
-This repository contains all analysis scripts used to explore single cell datasets for: **Jardine and Webb et al., 2021, 'Blood and immune development in human fetal bone marrow and in Down syndrome' (in revision)**.
+This repository contains all analysis scripts used to explore single cell datasets for: **[Jardine and Webb et al., 2021, Nature, 'Blood and immune development in human fetal bone marrow and in Down syndrome'](https://www.nature.com/articles/s41586-021-03929-x)**.
 
 ## Single cell datasets 
 
